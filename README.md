@@ -1,5 +1,5 @@
-# Relevé de notes — Collège Mixte La Renaissance
+# Renaissance — Relevé de notes
 
-Application web hors ligne pour saisir les notes et imprimer bulletins et palmarès.
+Collège Mixte La Renaissance : saisie des notes, bulletins, palmarès.
 
 Lien : https://davidsonlegrand13-gif.github.io/releve-renaissance/
