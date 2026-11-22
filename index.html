@@ -260,7 +260,9 @@ sauvegarde(){const n=S.classes.reduce((a,c)=>a+c.eleves.length,0);return`
 <label>Restaurer une sauvegarde (.json)</label><input type="file" accept=".json,application/json" onchange="importJSON(this)">
 <p class="muted">Pour passer d’un PC à un téléphone : télécharge la sauvegarde ici, envoie le fichier (WhatsApp, clé USB…), puis restaure-le sur l’autre appareil.</p></div>
 <div class="card"><h2>Nouvelle année</h2><p class="muted">Efface toutes les notes mais garde l’école, les classes, les matières et les élèves.</p>
-<button class="btn red" onclick="ask('Effacer toutes les notes de l’année ?',()=>{S.notes={};save();render()})">Effacer les notes</button>
+<button class="btn red" onclick="ask('Effacer toutes les notes de l’année ?',()=>{S.notes={};save();render()})">Effacer les notes</button></div>
+<div class="card"><h2>Tout réinitialiser</h2><p class="muted">Efface tout : classes, matières, élèves et notes. Pratique après des tests. L’en-tête de l’école revient à celui d’origine.</p>
+<button class="btn red" onclick="ask('Tout effacer ? Classes, élèves et notes seront supprimés définitivement.',()=>{S=defState();save();ui.cls='';ui.pcls='';ui.mat='';saveUI();render();toast('Application réinitialisée ✓')})">Tout réinitialiser</button>
 <div id="dlg"></div></div>`}
 };
 
