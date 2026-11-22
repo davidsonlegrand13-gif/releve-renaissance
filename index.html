@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f4e79">
+<title>Relevé de notes</title>
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400&display=swap">
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--bl:#1f4e79;--bl2:#2e75b6;--bg:#f3f5f8;--bd:#d6dce4;--rd:#c0392b;--gr:#1e8449}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:#1c2733;font-size:15px}
+header{background:var(--bl);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:5}
+header h1{font-size:18px;margin:0;flex:1}
+header small{opacity:.8;font-size:12px}
+nav{display:flex;overflow-x:auto;background:#fff;border-bottom:1px solid var(--bd);position:sticky;top:44px;z-index:4}
+nav button{flex:1 0 auto;border:0;background:none;padding:12px 14px;font-size:14px;color:#4a5866;border-bottom:3px solid transparent;cursor:pointer}
+nav button.on{color:var(--bl);border-color:var(--bl2);font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:14px}
+.card{background:#fff;border:1px solid var(--bd);border-radius:10px;padding:14px;margin-bottom:14px}
+.card h2{font-size:16px;margin:0 0 10px;color:var(--bl)}
+label{display:block;font-size:13px;color:#4a5866;margin:8px 0 3px}
+input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--bd);border-radius:7px;font-size:15px;font-family:inherit;background:#fff}
+textarea{min-height:110px}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1 1 160px}
+.btn{display:inline-block;border:0;border-radius:7px;padding:9px 14px;font-size:14px;cursor:pointer;background:var(--bl2);color:#fff;margin:4px 4px 0 0}
+.btn.sec{background:#e8edf3;color:#1c2733}.btn.red{background:var(--rd)}.btn.sm{padding:5px 9px;font-size:13px}
+table.g{border-collapse:collapse;width:100%;font-size:14px}
+table.g th,table.g td{border:1px solid var(--bd);padding:6px 7px;text-align:left}
+table.g th{background:#eef2f7;font-weight:600}
+.scroll{overflow-x:auto}
+.notes1 input{width:100%;font-size:17px;text-align:center}
+.notes1 input.bad{border-color:var(--rd);background:#fdecea}
+.grid input{width:64px;padding:6px;text-align:center}
+.grid input.bad{border-color:var(--rd);background:#fdecea}
+.grid td:first-child,.grid th:first-child{position:sticky;left:0;background:#fff;z-index:1;min-width:150px}
+.grid th:first-child{background:#eef2f7}
+.muted{color:#6b7a89;font-size:13px}
+.pill{display:inline-block;padding:2px 8px;border-radius:20px;background:#eef2f7;font-size:12px;margin:2px}
+#toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#1c2733;color:#fff;padding:8px 16px;border-radius:20px;font-size:14px;opacity:0;transition:.3s;pointer-events:none;z-index:50}
+#toast.show{opacity:.95}
+#preview{display:none;position:fixed;inset:0;background:#5d6670;z-index:40;overflow:auto}
+#preview .bar{position:sticky;top:0;background:#1c2733;padding:8px;text-align:center;z-index:2}
+#printArea{padding:16px 0}
+.page{background:#fff;width:8.5in;max-width:100%;min-height:10in;margin:0 auto 16px;padding:.5in;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.page.land{width:11in;min-height:7.5in}
+/* ---- documents imprimés ---- */
+.doc{font-family:"Times New Roman",Times,serif;color:#000;font-size:12pt}
+.doc .hd{display:flex;align-items:center;gap:14px;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px}
+.doc .hd img{height:70px;width:70px;object-fit:contain}
+.doc .hd .t{flex:1;text-align:center}
+.doc .hd .nom{font-size:17pt;font-weight:bold;text-transform:uppercase}
+.doc .hd .sub{font-size:10.5pt}
+.doc .titre{text-align:center;font-size:15pt;font-weight:bold;text-decoration:underline;margin:8px 0}
+.doc .info{display:flex;flex-wrap:wrap;justify-content:space-between;font-size:11.5pt;margin-bottom:8px}
+.doc .info div{margin:2px 0}
+.doc table{border-collapse:collapse;width:100%}
+.doc th,.doc td{border:1px solid #000;padding:4px 6px;font-size:11.5pt}
+.doc th{background:#e7e7e7}
+.doc td.n,.doc th.n{text-align:center}
+.doc .small th,.doc .small td{font-size:9.5pt;padding:3px 4px}
+.doc .res{display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:10px;font-size:12pt}
+.doc .sig{display:flex;justify-content:space-between;margin-top:46px;font-size:11.5pt}
+.doc .sig div{border-top:1px solid #000;width:40%;text-align:center;padding-top:3px}
+.doc .vierge td{height:30px}
+.doc .vierge thead{display:table-header-group}
+.doc .hd2{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #000;padding-bottom:4px;margin-bottom:10px}
+.doc .hd2 img{width:95px;height:80px;object-fit:contain}
+.doc .hd2 .t{flex:1;text-align:center}
+.doc .hd2 .nom{font-family:Algerian,"Cinzel Decorative",Castellar,"Times New Roman",serif;font-size:21pt;text-transform:uppercase;letter-spacing:1px;white-space:nowrap}
+.doc .hd2 .ad{font-family:Arial,Helvetica,sans-serif;font-weight:bold;font-size:11pt;margin-top:3px}
+.doc.bul{font-family:Calibri,Carlito,"Segoe UI",Arial,sans-serif;font-size:13pt;padding:0 .45in}
+.doc.bul .bi{display:grid;grid-template-columns:62% 38%;row-gap:6px;margin:6px 0 22px}
+.doc.bul .bt th{background:none;font-weight:normal;font-size:16pt;padding:3px}
+.doc.bul .bt td{font-size:13pt;padding:3px 8px}
+.doc.bul sup{font-size:65%}
+.doc.bul .bl{display:flex;justify-content:space-between;margin-top:26px}
+.doc.bul .bm{text-align:center;margin-top:30px}
+.doc.bul .bo{display:flex;justify-content:space-between;align-items:flex-end;margin-top:40px}
+.doc.bul .sg{border-top:1px solid #000;padding-top:2px;min-width:140px;text-align:center}
+.doc.bul .bd{display:flex;justify-content:center;margin-top:50px}
+.doc .dec{font-weight:bold;font-size:13pt}
+@media print{
+  @page{size:letter;margin:.5in}
+  @page land{size:letter landscape;margin:.4in}
+  body{background:#fff}
+  header,nav,main,#toast,#preview .bar{display:none!important}
+  #preview{display:block!important;position:static;background:#fff;overflow:visible}
+  #printArea{padding:0}
+  .page{box-shadow:none;margin:0;padding:0;width:auto;min-height:0;page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto;break-after:auto}
+  .page.land{page:land}
+  .doc th{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<header><h1>Relevé de notes</h1><small id="hdSchool"></small></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<div id="preview"><div class="bar">
+  <button class="btn" onclick="window.print()">🖨️ Imprimer / PDF</button>
+  <button class="btn sec" onclick="closePreview()">✕ Fermer</button></div>
+  <div id="printArea"></div></div>
+<div id="toast"></div>
+<script>
+/* ================== DONNÉES ================== */
+const LOGO0='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCAC9ANwDASIAAhEBAxEB/8QAHwAAAQUBAQEBAQEAAAAAAAAAAAECAwQFBgcICQoL/8QAtRAAAgEDAwIEAwUFBAQAAAF9AQIDAAQRBRIhMUEGE1FhByJxFDKBkaEII0KxwRVS0fAkM2JyggkKFhcYGRolJicoKSo0NTY3ODk6Q0RFRkdISUpTVFVWV1hZWmNkZWZnaGlqc3R1dnd4eXqDhIWGh4iJipKTlJWWl5iZmqKjpKWmp6ipqrKztLW2t7i5usLDxMXGx8jJytLT1NXW19jZ2uHi4+Tl5ufo6erx8vP09fb3+Pn6/8QAHwEAAwEBAQEBAQEBAQAAAAAAAAECAwQFBgcICQoL/8QAtREAAgECBAQDBAcFBAQAAQJ3AAECAxEEBSExBhJBUQdhcRMiMoEIFEKRobHBCSMzUvAVYnLRChYkNOEl8RcYGRomJygpKjU2Nzg5OkNERUZHSElKU1RVVldYWVpjZGVmZ2hpanN0dXZ3eHl6goOEhYaHiImKkpOUlZaXmJmaoqOkpaanqKmqsrO0tba3uLm6wsPExcbHyMnK0tPU1dbX2Nna4uPk5ebn6Onq8vP09fb3+Pn6/9oADAMBAAIRAxEAPwD7LooooAKKKKACiiigAooyPWigAooyPUUZFABRRVW81HT7MZvL+1t/+usyp/M0AWqKjt7iC4jElvNHMh6MjBgfxFSZHrQAUUZHqKMigAooooAKKKKACiiigAooooAKKKKACiiigAooqO5mjtraS4mYLHEpd2PYAZJoAkpA6noa8H1r9qT4fQzS22h2ms67PGxUra2p2kj/AGq5y9/aF8faiXHhz4ZPaxkfJNqVwFH4gUnJIuNKc/hVz6byM4qORkQFnYKPVjgV8fan8S/jdqu4TeJtA0JGGGS1h8xh9Ca5LU7bX9WH/E9+IXiTUOeUil8lD+VZSrU11O2lleKq7Q+8+0tc8Y+E9Ei8zVfEel2i/wDTS4XP5CvPvEP7R/wm0pnjXxA2oyJ/BZwmQn6V8vQ+D/DCSGSTTnupepe6maQk/ia07axsbZQtrYWkAHTy4gP1rKWLS2O+nw9Xes2keq6r+1baOWXw34E1nUM/cknxEufcVyuq/tAfGXVRs0zw9pGiof4piZGH61z2SFwpI9qbWUsXPojtp8P0Y/HJsr6n4k+MOvAjWPiHPbxk58uzjCY/EVgy+EFvXMut6/rOquTk+fcsQT9M101HpwTmsniKj2O+nlGFhtC/zKGmWN9pAU6H4j1vTCv3RFdsV/Jsiu50T4rfFHSNq/25Z6xEvVL63wxHpuXFcttPpj61UvNR0+zGbu9ghH+24pqtUvoFXLsG170bfge16L+0Jfx7Y9f8INkn5pbGcOP++SP612+h/G/wDqZCT39xpkg6rdxFcfjzXx/e+PPD0GVgmmvHzgLBGWz+NOtNS8Ya64TQfBd08bdJLoYUVsq846z09TxcRg8vjop6+Wp976V4i0PVUD6dq1ndA8jy5Rn8utau9R1/Ovh3QPhL8WdZkWebUrbQYz3thhx+Nel+DvA/xr8HaxBe6d4/g16yAxNY6lkhh7N2NVHHUG7cyPGrUYxfuO6PpgMpGQRilrzq08ZeKrSNRqvhCBefne3v1IUeuCKfefF3wlYRsL2a4ilUcoE3An0zW6rU3szONGpN2irnoG5SetOGO1fN93+1h4Us/Ep0+XRb+ezB+ae2G9o/UkV7F8OviN4Q8f6e974W1aO9EXEsXSSI/wC0vatE09iZwcHaSOuopqNuzgU6mSFFFFABRRRQAVl+L9Mm1nwvqek290bSW8tZIUnAz5ZZSN2PatSgjIwaAPiK48OfEz4HWL2Vx4XtPEPh4OzfbrBMS893I5H41U03xn4E8WlVt9Zn0W/JwYb8nZu9MmvuVoo3UqyBlYYIIyDXyx+2n8JPDNr4Gn8caBo8NlqNtOhuzAu1ZY2OCSo475zWUqMZ7noYbMq2HXLHY47VNJ1KwiNxJafbLQ8ie0bzEx+HSsu3u7Wc7IZkZh1TOGX6g1wvwZ0X4g6vpt9f+B9dMMljIqvZyynbIDzwDxXRa54sv7K5W1+KHw9lhmB2nUbJDHJ9cjg1zSw1j2qOetpc6OgIx14pME9Kx9KSw1ZC/gbxta3bEZGnasNkn0Dd6i1LW9V0GXy/FPhy904HgXESmSE+4YVi6EkenTzGjNXehuOyRpukdUA6lmAFZOoeJ/D9iD5+qQbh1Cncaxb7TPDXixDLbay4lbpsn6fVTXL6v8NtXtlZ7CeG8XsvRjTp04N2kYYnG4qCvSipLutfwOkufiNpm8w6dY3t9Mfu7IyAans7j4k67gaT4WNpGf8AlrOMfzqp8OvHl54EZdO8ReGw9ovAuEgAlT/gX8QrrLj47PdS7PD3hW8u/wC60pwPyFY1niIT5aNO/m3oeJPMMVU0bfolYj034QfELWiP7Z8S/ZY25aK2BJH4iu10D9nvwpaFZ9dv2vH6ubu4xn8BXCz+Ovi9rC7YFs9IhPTuw/OqMmheJNVJfxD4v1G5B+9FCxRTWDhi5P35peSCOExNbXlfzPd7ex+EPg2HMtzpkRQdAFB/xps3xv8Ah9YgQ6NZTai6j5Rbwlh+deH23hjw3ppE89vEzLyZLuXcR+dJdeLPDGlgot7AcdFgUH+VEMFFu922dSy2MVetUSPXr343eILsf8SnwwlrH2a7kwR+FYd98QPHmogrLrCWiHqlpHj9TzXjl18TLeWYw6VpVzdSk4UNkk/gK3tC8OfGDxdtltNMj0W1fpLcjYQPoea6o4JbpWCM8uoP3feZ1dzqGoSgvfardT7uC005wPwzXHeKde0RWFibi4vpW/5dbPLM59CRXo3h79n+3aRbjxh4mv8AVn6mGFikYPp616X4b8JeEfDYFto+k2FrNjgqoaQ+5J5reGGjHcdTN24clKCR8uTyeL/D2kHX5PBkem6HvEeJk2yNnpz15qXRfEc/gnULX4meCbryMSKl9Yg/JKCfmVhX0r8X9Ot9V+Gev2tyMp9kZ1z/AAsvIP6V8W+GFkn8Ma/Zk8C2WQDPGQetdNranme3nUTpVNU1deT8j9R/CmqLrfh3T9XSPy1vLZJtuc4LDOK1K86/Zv1JtU+CHha8ZtzmyVG+oJFeijpzWx5dwooooGFFFFABRRVbVrqOx0u6vZThIIWkb6AZoAlnkRIi7yKiDksWwBXgn7TnxT+Ha/DnXfC03iC2vNSvLYxRW9sfMIftkjgc18/W3ifxN8Ytc1N/Enjy707RobopHZW2VDRk8dO2K9C0n4Q+B3sItMtYo1triVWu79z5kpjByVB7Z6VDqRTsztpYCtUp+0S0NH9jD4e3SfC6bxK0pjuNVnOxXHWNOAfxr1jWdBnSIw6jpyXMDDDB0Dqa7vwt/YsGiW1lobW4sraMRQxwkYRQMAYrUYo3ytjHcEZqmr6nNGrKGh8seMPgf4B15muLeyk0e9Jz51m20A+u2uKu/APxc8HQGPw7rcHibSx/y5XgDEr6Yb+lfZeoaJpd5uMkKq4/iTg1zl/4RuFJayuBJjkK/BqWjWNZJ3WjPhjW5vBt1e+T4z8H6l4M1Vjg3dmhERb1K/4VLa+H/FtvCbzwX4lsvFFkvIhEg84D3Q8/lX1Z418PX88Dx3Oi2WoIfvW13FlW+j14L4l8FfDldV+ZtX+Hurk4STJ+zM3sw+XH41Djfc3hiZRd1o+60OBPjyW0mNh4q0Ce2kHDK0f9DWp/wnPhW0tVa3csDyIoocFfrXQ+JPC3xOh0KeHGkePdLaIiG4QK80Yx94HrkV474c8E6/rHi228MC3NhqU65Vbz93kdc81LoQkrM6f7WxENrN+h02ofE4biun6b/wADmb/CudvPG/ifU5xBbzsrNwqW0eT+nNe5eEf2adMtyJvFGtzXbqctBbDan03dTXrOheEfBng61BsNM07TlXlppsbv++jTjTpx2RjUx2Kq/FOyPlLw78J/iV4tZJ5LG4t7djkz38hUc99p5r1nwl+zVolqI5fEurTX0vXybYbIx7Z612/ir4z+AtELRPrB1G4BwIrJN5J9M9K4u9+LHjvxI5h8KeHU0e2P3bu/5fHqFpymo76EU8NOtK0YuTPVND8LeDvBtkZbHS9N06NBlp5QoP13Guc134yeGIr3+zNAjvPE+psdqwWEZKg+7dAK+epHutX+J8Gi/FDxJqT2ckgBljkxGSfu8dl7V9Y+EPC3h3wxp8dp4f0y2tYSBl0UF39y3U1V7q6dzNxnCThJWaMLSrTx94iAm166h8NWTci0sjuuGHoz9vwrq9K0qy0qEpZwnd1eR23O59SabrmtaToNk15rWpWtjCvJaWQAn6Dqa8f8U/tBaeZnsPA+jXOt3J4851KxA/zNTa5STWnU7H47+LNN8LfD2+W8bfc38DW9rCD87kjBP0HrXyV4XUWPhTWNYnACtD9ljX++x6/lXaa1o/irxxr39veN70RqBtW3jPEa+gHQD3qTw/4bt/iJ8RtD8A+Ho8aVbyeZeSRj5Qi/eJPf0/GhST91G/sZUYurUVtNF1Psv9l23+zfATwomDlrPcePVjXp4ORVLQ7C10rSrbTbGJYrW1iWKJAMAKBgVdrY8kKKKKBhRRRQAUyaNJYnikVWRxgqwyCKfRQB4j8UP2dvC3iOWXVvDcz+GNbOW8+0GIpD/tp0rwzW7f4kfCm9EfinTZZtP6LqliDJC4/21/hr7gZQ3Bqve20FzC1vcwxzwyDDxyKGUj6Gs6kIyWp1YfGVcO7wZ8p+EviLpt9DHdRXZtW7XFq5Iz7jtXqWifEfVYIEluIYdcsyP9bbMFmUe46E18u/tMwaTpXxwl0f4baXJY3FvGPtqWufLkmPP3egx3qpY+KNf8M3EZ1q1n0yYgf6XbfPC5/2l6CuZ81J2TPVVXD4xXqQ5X36H21pXiTwt4rZfsWqPbagowI3PlTA+m0/e/CrF7e+KNDcyNZLrlkOvkYS4Uf7p4b86+XbDxxpup2sZ8R2CXEH8Go2J+Zfc4+Za9B8M+LfFemQLceFdetvE2mrg/Y71/3ij0WQcg/UVtGt0kjkrZXOLvTd1+J7Jovjfw1rc32Nbtbe96NZ3i+VKD6Ybr+FHiTwXoGv20lnqVhDJDIOUdQyn8689fx18NfGrJpPjjSm0TUzwn25fLIb1SZf8atS+FfiJ4XtRd/D3xXFr2mjlNM1dvMyPRJh/WttHqeb70XY4Hxh+zhrejzy6p8LfEt1o9wPmFoZiYW9gD0r5/8AipqnxL0rxTot1430g2Wr6ZOog1FI9onXP3SRwa+u9N+PGladfrpHxF0LUvBuoE7d9zGXtnP+zIOMfWvPf26/FXhzU/hXpNnYX9rfXF7eCa2kgkD7UUcnI/Kiwru53EqXWsaFBJbX01jJPCj+bDgkZHNfPn7RHw11fTfDkniWLxLrGsCKQC5iuH4RD/EMe9dl8N9B+KereHbC717xguk6b9nXybe2hHm+Xjjcx4HFa/jDxz4A8M6FdeH9U1ebWZLiFo5IEbzpXyMHJHAqNmdL1icB+zroHg258Dx+ItTtIBPHOYZCRksw6GvVr/QtC1O2uNQsr5sRpu2p0XHQY7V8+/AyUNp2sQQeaLSO63wI/wDCDn9cYr3rwHcaXJpdxpkpZJZ1LSnpuX2NeVXknUcGfcZZTnTwVPEwep4Z8atBi1Hw6NXiVUuLPOWJxuT0/CtTRfiP8Q73whpmjeHrCHS4be2SJr+5O+V8Dqo7VjfH7VreFINEtZHWCWXzJO58tTxXMDxR4h1rZpfhfT3hgjjEYdBk8DGSegrqw/PGlqzyc4+qzx8pWey0XVm3rWlaVHOdR8b+IrnV7s/NtlkOM+gWsHVfiAttAbTw3p0NhEBgSlRk/T0rV0L4Q+ItalMuq3e1jy4Ul3/PoK9O8LfBfRrApJPAs7jndOdx/LpWFbMMNQ+KXMznjQxFRWow5F36nCeEtB8K+L7CKO8+ND6ZqUq4ltbu3KID6BumK+sP2cfhX4O+H+mS3mg6xBrmpXiAXF6kisCPRQOgrzW4+Gfg29Upf6NBcAjH3Qv8qxZfg9p+nzG68J+JNb8PzjlFguCUz9KzpZ5hZb6HNXynFy1vzH2KG2glulODZGcV8i23ib4/eCgAmtab4osYx0vE2yEfUV1Gg/tOzWapF4z8B6nYHo81kfOT64616VLFUausJJnmTwlan8UWfSe6lrjPhv8AEjwn8QbSa48M6h9paAgTwvGUkiJ/vA12ddBzBRRRQMKKKKAMvxbrMHh3wzqOu3SSSQWFu08ioMsyqMkCvDW+P3inV7OG98N/DW5NlOu6G8vrtY0YeoHpXvOu2FvqujXemXab7e6haGVfVWGDXyL4R0298LeKNV+DHiSRj5Ra68O3Uh/1kZOdgP8AStKUYylaQmUfhfd3OufFHx5q/iCxs47yWVHmSI70j4/hY11qQeGfE5vbGzWMm2bZL8uVye2K8Y8Savf/AA9+IOozy+Ytjq8BWcAcrKo4H51qfs7a1cWujaheMS5nvWaXPJOa+czjAVIValVPTSx9JlOLjKnCglve5f8AE/wrvdJuHv8AwvdvYSHJZQd0Mn1XtXHjWb7Q79F1mG78O3wOEvrM5gkPqw6V9NWV1DeQCaBg8bLyD1Hsayde8L6Zq9tJDcW8WGGCpUFPyrzcLnFSFo1VdHp1MHHem7eT2/r0PNofiFK9iLXxpottrmlNwL60QOAvqydj9K6TwlLeW8f9qfCHx00UOdzaXdyedAx/u7W+ZPwrh/EPwx1Xw/K174Vu3tgTk28hLQP7Y7VxU7w2+pj+0YLrwrrAPy3tsSsMre+OK+goYmnWV6cjz69JPSpH7/0l/mfTj/GjTp7f+wfjP4G+xQyfJ9tWL7RaP75xlK+XPiJD4e1X4oSH4Y+H7u50C1lUwxEs8UrA5JXP3VJ7V3mn/EnxNodkLXxfpkHiTRnG37XbgMdp/vDoa2bz41fD7Q9JjTw9ZNcSFci3ggEQU+jH1rr9pPax531KgpXlOy7Pf/Ixb+y+J3jBVTxBqN1ZWQAVbHTwYwFHQZ61kapZeH/BllcwvFBDemJhtlYPKzEdzWB4u+NPjLXne30+VNKt34EVsMyH6t/hXGavoWvppQ13VllVp5BHGZ3JklY+x7VnZtrnZ0LGYelFxoU7+bPaPgvpi23wvh1RlKz319Kee6DvXpVnaSWPhC71Qrh7kiJCeoTuRWNpunQ6XoXh7w8T5MVnaJ5p9Gb5mq/8dteh034YefpoYpsKxEcYHTNedOKqVJfcvU+tw85YTL6UZdrv8zw/TNIg8feP9Vvr5pG02zIijCnhyOMfSvX/AAt4egEa2OlWkVtbJ94oMY+p7muT+EelR6b4Ns2lYBrnM80nfntXZah8QNC0Gz+zx3NpaqvPzvuYn1IFcGPq1qk/Z01otDyMOoR/fVH70tfvO+sbSGwtlggUKAPmPc/Wkub+zth+/uI19s9K8F8QfG6xJcW32u9P8O392n51wWs/FfxBdljaLBZoT/D87/rXNSyTEVHeRNXNMNT63PqC+8VWFqDtUuAM72IUfrXFeIfixpViu2bVbaI9o4Rvavndf+Ex8Uyjy49X1FmONqI23/DFbN18J/HVh4fu9f1LSFsbO1j8yQzuA232FetRyGmvjkedUzuT/hxOs1340RHd9ksri4borzybV/KsnTNY+Knjm4Fr4b0i8lWQ4H2a3IUfV24r3/8AZL+B3hW88BWXjLxVpMOqX1+xltklbckMfQcdCeD1r6f0uysNOtVt7Czt7SFeBHDGEUfgK9SlgqNH4UebWzHEVtHI+c/2TPhN8QPAPiDUtf8AFdzaww6lAEktFffJuB4J7CvpgUnyk54pa6djibb3CiiigQUUUE4BNACP0rxX9q7wM+veC18W6PILXxD4b/0y1nHUovLIfbFdn47+KfhDwbqMOl6xey/2lcJvhs7eIyyuPUKK8S+PXxj8ZzeANVk0fwsmi6NPEbd7rVHCzyhxghI+oPPemk9wORujoHxd8BWviKe0Ek8QCahCpw0UuMFx6A1wNzo2seAHOoeHS2oaSx3XNo4+df8AaFbuj+Hr74O2fhXxTFOdQ8OeJrVE1Bg2Y4pm7fSu11aG3iuc20iyQTr5kTDkbT2r0lRpYylyT3IhUnRlzR0Zj/D7xvY6nH9s0q4BfH761k4ZT9K9K0nWLLUFHlPscDBR+ufavA/FvgJ3vv7a8L3DadqKksY0OFkPt6UnhP4gsLsaR4pifTdTjO0SMNqsfU+lfGZtkEqLc4bH1OAzmFZctV2Z9HHBBUjcCOQRxXEfEbSNEe3tYrmCBjeTrCLdhneT3A9qk0zxNdQwqkwW5UrlHB5P4+lch4auJPGnx/tra5nJh0m33BM8B244+leJhMNNSbba5Vc9DHV1So33voJqHwa1y1MkvgG9mfcp83T7nJhcdwpPSvKLT4TeKZNSki1m1GkRrKdwc5J552+or7P+IniseGpNG8O6aF/tLVJNkQ2/6uJeXc/h+tchr+kT6rqkUnmBYwh3Mepr03mNbDQUZu7fU8jCYOOLfNPZdDybwv4L0Lw/81vZie46+fN8xP09KwfjBGLi+8M2vmKRJqKApnk5Ydq9I8V3FjpmsWOiWw3zygsxJ5wOSa8F8Tf27rGv6j40srKeTTNFu0HnfwR7WGB+db4BVa9X2k30OrMJ0aFD2cEfQWsQSHX5LZyQ25U57AAc/lWb8Yn/ALd8OXum6fAZI7e18uNQPvEdTV7xNqltPDB4iWQJbXVklyzf8B5H515v4B8JePvHv2zxZpGu/wBl2huStrHPkpIo9B0xXRSoylUbXQ9/H4+hRw9JTV+ZW06K2rOJ8NaN8TPF+nJBo9tqFzZQfuso2xFI7E+tdjon7N/jK/ZZ9W1Kx08N94FzK4r2j4S+FvFfhfVr8aslj9ivQHf7K/HnD+Pb2zXo8mI8l2APuRXqRdtkfCyp3bTlc8O0L9mvwnaqh1jVr7UG7quEXP4c16DoHwv8BaLtFn4Zs2df+Wky+Yx/OuvOMZ7kcVj6rpN/qn7qXWbm0tT1W2ARj/wKjmb6iUUlsN1rxH4W8I2m7UL/AE7SogOEUqpP0Uc14n8WPi/b+L/Dd/4X8I6Bqupi7TZJeeSQoAOflH4V22taZ8H/AAjMbzXnsJb085upftMxPsDnmsO6+M5ZTa/DzwPLOmNq3M8Qhi+uOtDkoathaU/d/Lc5H4CeNde0vRF0bSdeu9N1CxYhrab5kZf9xv6V7Vp3x+8RaN8ninwoNQtl4N3pjfNj1MZ5r5+13w94i8Qa7/wlHijWNM0W4HX7GojYD69zV+8+Inh3RrRLUajPqlxGuC8Y5b6npXnzrzjO9H3kd8cPSnD/AGhcr6P/AIB9ceCvjb8NvFRENh4jt7a67215+5kB9MGvR45Y5FV42DKwyrDkEV+X/iPWrvx5dfZ9E8Il7onCSW8LPMT25Ffof8Ff7THws8Nx61az2uoRWMaTRTDDqwGOa9KEpSV5KzPGqRjGTUXdHaUUUVZAUj/dP0paKAPkT9sPTtX8HfFDw58WdOZ5LRNttcqRxHjt9GH61gftSacfFHg7QvHmm3VxdaTGqm4t0clPLb+PHqOlfWfxR8I2HjjwNqfhnUI1Md5CVRiM7H/hYfQ18o/s+XciReJPgv4vQ+dZGSOJJO8Z4OPp1Fa03pyky7nQfAfT7bxN8O9R+D3iaVbrTr+0N/4evT/HEf7p/vI2OK4LQ5tX0Oe/8G64hGs6BIVAb/lvB2cevFdZ+zkP7D8fXvwn16Yw32lXTX3h68JwQp+9GPVWXt7V337WPgW8mtbP4meHrfdrOjAC+jQf8fFt/FkdyKqjUdKYpLmR5zbzQ3MEc8Lgo67hWB4w0vwxr9qYdVuLVJV4SdZAHSo9H1S1hltbqCRf7H1f95A+ciGbunsDXn/xp8Ktp19/bthGTbXBAuI1P3H9fYGvWq1f3d0rmMY2d0SWHiHUvAWoLYT6jb61o7HCGOUF1H9D7V0fwQ8UaUnx/k1V7pY7S8TCGQ7c+31rtPgZ4A+H/ijRbC+sdJjkuJFKzm5YyeXIByMGum8Xfs5eF5bSa4s4Gs7gZcPbOQUPqBXw1fGYZzqJQcejZ6ynWlTUW7orfEvXo5/2p9A0+J90UOlMAe2XG7Nd5KAFdz2BNfLHiXSPE3w+8eaRr2s37anAjrDFeEnOwcbT6ECvoqy8S2N5ZguWiZ4yVJ5DZHrXlZpTUlTq03eLW57uTyThKL3ueDTatPefEfxVrc826PTbN44c9FJ7Cu7/AGdo9IvfgNqlrrt3a2trqF3OsrTyBRyowefQ1wOiW1tF498U+Gr8f8hNDLG3t2Aq54P/AGfPEus24k1XW4tP0wMTGkbGQkZ64HAJFfQ4Rxj7vkvuPKxiqO07X1f3mVp3iCO88Aax4GnukmutLWRbGZWyJoAc4B74/rXpfgD4j69N4Z0zQvA3w7vbhba2SM3FyfKhJxyfzrT034QfDDwla7r66luLzgrO83zr9FHrXRXnjwQW62egaOWVFCh5/wB2gA4ztHNbSq0qW73H++rxhGz91WH6bpXxP1YrNr3iGw0SFzza6bCHcD0Ln+lW7u58G+EwJNY15p7pf4rmcyysfZa858VeLbt43PiHxatlBjm3tWEYI9OOTXnN98RfC+ls39j6Sb2fOTNKOv4nms1iXLSnFsr6soa1ZJfme26p8VLy73x+F/DNzPjhbi+PlR/UDqa4nxPqXifU4jL4r8bR6Xan/l1sCIhj03dTXmTeKviH4ok8nSLOeCJ+hhiIAH+8abcfC3xncxG81C5ty5GWE8+T+fSolKo3ac1H03M3Ww8douXqacviT4faDIzaZp76te9TNJ8xJ/3mrNl+IXi3X7n+ztAs1gd+EigTc+P6Vxuk6NPqestpUE9vHc7iqiR8AsOoB71e1XSvEPgvV4LiRZbSZfmiuIz8ufr/AErrhgY25t/U554+rtG0V5f5nsHgz9m/4k+OGjv/ABBrtpYW78kSz+bJj2UdD9a908C/so/DnRBHLrJvNduF+957bYyf90V478JPikNcSO0uLt9P1pBg7X2rP7j39q9y8MfEHxJBfW1ncTpeQySBD5i/MuTjrWiUY7IxkpSV7nrfh3wx4e8PWq2uh6PZafEvAEEIX9a19vOcmlUDApapGIUUUUAFFFFADX4A4Jr5S/bA8MXXhHxnonxj0GBgYJlh1RUH3l6Bj9RxX1fWJ448PWHivwtqHh7U4w9rfQNE/GduRww9waadncD5T+Ols+oaF4e+Mvg5s32kmO4Yx9ZID1B+nT6V9ReBPEGneN/Aen67AI57XUrQNIh5HIwyn9a+W/gHcT6FrHiT4L+Kk8x7F5BaLJ0lgbggfhzXefst3U/g7xZ4h+E2oykxwOb/AEdmPDwOeVH0OK0qxuuZER00PLPiZ4HXwB46vPCFwWXw5r7Nc6RMRxBLnJjB7YPSs7w9crrOn3/hrXYl+32w8qdWH+tT+GQV9YfHP4fwfEPwFdaQwWLUIf8ASNPn7xTLyPwPSvjHVJdUltI9figMHiTw85ttUtv4pVBwwI7+orrw1W616ClGxH8MPFt38EvH95BqNjdajpNzGSscXJb+6w9+xr1c/tT6ZIcW3gLWpmPqetYWjXun67pdvqdssU6SLnLqCUPdfbFXwirwkEaH2UVnUyahVm6j0uUq8krHNfEX4m6d460t9Pm+GOrIkjB8h8Ybsw9DXBaFe+P9DaQ22k3lzpq8rBc8si+gPrXsmXHXA/SoJry1hP7+8gj9d0oFOOS4WMXFbFQxdWD5os8S8Y+KYL3W7HxJpQksdUtB5c1tOuD9fcda9F8N/FXTX8OtPc6rJpsucT24JJJ9V9qh8YW/w/1gM2q3dks3/PaJwHH5VwV3pfwygn3f8JBeyqP4ETJP44rirZRTsop7f1Y7KWaVoyct7/1c39a+LNlG+3R9Ne4lPSWc4z9Kwzq3xJ8VvttI54bc8fIvlqB9T1q9p3iz4d6JzpmhTzyDpJIoJP51YuvjJEBts9ECegeQKPyFXRy7C09ZamVXH4ip1sjNt/hP4huWMt/qNsrnk7mLmt/RfhX9gmW4fWcyDssAb8s1z1z8W9fmJFpZWsefRC/6ioB4v+I+pHFpb3uD/wA8bNv8K7L4WKskcn7x6o9ds9GubeMK2tahIg/hUhR+lNv/AA1p2o4N+by6T+40xAFeV22j/GHVZA6WOut/d4CD9a6dPh/8ctYtIraaN7aJf+ek4Un64pKeETuqaK5ajOkj8KeENOkWcabZQyRncrNJggjvk07xBqXhO6sZLTV9QsZbdx8ytID+I965+1/Z38f3hzqGt2MIP3t0zPXnnxE+HHijwLKh1y0BtHYrHdxndG/+Bqvr0bcsY6C9lLqJ478MN4bmt9V0e6abTZzvtbhW5RuwJFfRXw11t9R8M6PrBPmy7FaTcfvMpwc/lXh/w4f+1vA3iDSb399b20XnQI3JRuenp0rvP2dL97nwPNaNkm0uCAT6EA1yV4pJSXU1w71cT6z8N/E3Sr8pDqKtYTZxk8ofx7V3trdW11CJraeOaM9GRgRXy0ORV7R9Y1PSJfM0+9mhwc7d3yn6isEzaVHsfTuaK86+Gnju41zUF0rUIEE7IWWVOA2BnkV6LVGDTTswooooEFNddxBBxTqKAPmT9sHwreaDqei/GDw9Gft2kSrHqSxrzJAT1P06fjUXi+6jvdO8MfFrw1mS40lluHEf/LW1fiVD645P4V9HeI9Isdd0a90fUYhLaXkLQyoe4IxXyr8FHm8IeMfEXwa1xvMFlI82nb+ktu3Vffg/zrak7+6yZaao+rdK1G21XSbXUrOQPb3cSyxODkEMMivm79qPwc/hjxDD8UNItHls5wLbXreJM7l/hlwO/Y16l8EpG0y3vvBlyxYadJ5tkx/it3JIA/3TkflXo93BBNbNDcxRzQtw6SqGUj3BqE3TloPdH5c2Pi7VtJ1G+i8OI1vbXlwXjgdCxGemB61vRj4x6wMW+n6tg9NkGz+ddF8Q/E/gvTP2pdS8QLbvcaNZTgCG2jGDMigfKBxjINeip+0Tp11Js03whr1256bUI3fpTeIqpWTKjTi9zyOH4Y/GbVMebaXqZ7y3W3+Vadn+zv8AEG7YNf6lY2/rvuGcivWLT4peNdSbGn/CfVSD0M0wUfqK2bPW/ive7SngzSNPU9RdXpyPwArJ1JdzdU4Hldj+zDfNhr/xVbr6iK3yfzJresP2Z/DMTA32v6lc+oUBRXqNkvjuXm+uNEtl7+RGzkfma27G3v05vL1bkf7Me2s+eRapQ7Hm2nfAD4b2pBksby6/66znn8q6LT/hX8PrHHkeFrE+8gLH9TXZhW28Kx/Cgq4/hpOTZfJHsZNn4a8O2ahbTQtNhA6bbdf8K04o44V2wxQxj0SMD+VO3KPvMq/VhTRJGW2iSPP+8KNx2SHsWJzuOaCSRyaie4hTO6WIAeris/UfEWhaenmX2sWluo/vNn+VUoS8xXRqVwfx8l0mL4R602sR+bCYwIUPXzc/KRVbWvjV4A01jGL+6vZV6i2tmYH8a8k+KHjw/F240zwxommX9jYxzma7luEK7gOnH51UKcnJKxFSpGzscd8LIZ9P8HeI9au1CWctv5asf4mA7fnXo/wE04WHw9t5ipDXcjSnPXGcD+Vcr8X5LfR/B9h4Y05VQXEixhF67B3/ABJr1jw1ZLp3h3TrFVwIbdFP1xzXVivdSh2MMMrts0KuaPpd9q9+llp0DTSseSOij1Jq/wCEfDWoeI70RWqlLdT+9nYfKo/qa908LeHNO8P2YtrKLDMMySn7zn3/AMK5UbzqpaGZ4A8G2XhpPNJWe+df3kp/h9l9BXX01VAOadVHK227sKKKKBBRRRQAhUE5Ir5U/bT0e78NeJvDfxa0eIiaxnFteFeNy9s/hkfjX1ZXH/GHwlB41+HOteHZk3Nc27GI45EgGVI/EUXs7iaucR4P1iDU49D8WaWRJHLGCdp6xv8AeU/Q/wAq5H9qH9oG28L2c/hDwhIL3XLhDHc3CAslopHt1b+Veafsk+LJrKfUvhzrUointJHe1EjYwQcOnP0zXsuo+HPBMm6W6t9JgkYkmXeqsSeufeu32UalpNkXcdD5f+HPjLw74V0wpH8O7vXNRmO+e8vFDb29gRwK7m2+NXirAXSfhckC/wAPAX+Vd5qth4JtQxi8X6Zb7egeZWA/KuL1rxL4W0xmU+K9NusdoZMmrWFoPeQ1WktEKfir8WLofuPB+m2+f+e0x4/WlTxt8Y7lctD4dtPwZsfrXO3PxK8HQjI1CVz/ALEZNZ1z8WvDMeSlveTnthMVX1XCx3Y/bVGdt/wkHxXmH73xLpNt/wBcrTOPzpUvviBJ/wAfPjiVif8Anlaov9K89b4t28hxZeH72f0p0fj7xXej/iXeCLlsnGWBp2wcQvVeh6D/AMVE/wDx8+MNXf1Cuq/yFPSK7Xl9Y1eb/fuWriIr74r3h/ceHbS19DIcfzq3FonxauQPP1PSrRT1AUEil7fCR2QctVnX+RuO5pbpz6mdz/WpYzJGflkkBHfec1ykfgXxlM2b7xzIn+zBDgCrUXwzR/mv/Fet3XqFl2fyo+vUl8MSlQqPVsva/wCINK0WA3Gq6isQPRfMyzH2FcPD8V/D9xeMs+mTeQDhZiA3HqVrtrL4Z+Ebe4FzLaz3sq9GupWf9DS6x8M/B2qTrLLpYt2HU2zFM+xFZTxzb0RSwsu5zd18SPBdvEpSbzfaOAfrWVN8XdHjLfYNHuZzjCkKBn24rvbL4beCrTHlaHHIR3lYtW3ZaDodmVWz0WyiI6BYVyTUPHy6If1XuzzvwL4Kv9d1VfGHjJP3jfPaWR4CL/CT/hX0L4E8D3mvyLd3Ya209Ty2MGT2X/Gtv4e/D2W6MWpa7GUh+9FbHqfQt7e1euW0UcMKxRxqiLwFAwBXM5OTbZXMoLliQaTp1lp1hHaWUCRQoOAB+pq4AB2o6UUjIKKKKACiiigAooooAKKKD0NAHw/+0v8ABPxavxVvtf8AB+nSNpmoKLiSeJ9ohlPDDjntmvNYPhB4xujnUdVgi9mnZq/STygVKsdynqCMis8eHNCLtIdKtCzHJPlindrYa5eqPz/tPgYTj7ZrygntFET/ADrbsvgh4bj2m4vtQuSOoA2ivuqPRNHT7mmWo/7ZipV03T1GFsbcf9sxU6mnPDsfFtl8JvB9ufl0Oe4P96Qsf0rdsfAmhWpAtvC0IPYG2zX1zHaWy/dt4h/wAVL5Uf8AcT/vkUWFzrsfLlp4duYxi10Jox6LbY/pV+PQNeZfk0i8I9REeK+lNijoB+VLjHSiw/beR83p4X8SSdNHvD7lMVMngzxQ4yNHn/Gvor8aVs460WH7dnzje+EfElnF5k+kz7cZJQbsflWI4KErIrIw4IYYNfU+wdazdW8P6Pqalb3T4Jc99gB/OiwKv3PmnjGc0V694k+GOjx28l1Y3dzbYGQnDD9a5PQfBUWo7vM1GRMHHyxj/GpsbKpFo5G3gmuZ0t7eJpZnOFRRkk17D8Ovh/FpmzUdXjWa9+8sR5WL/E1ueC/Bul+H4vNh3T3D9ZpAMgeg9K6hFwSc1VjCpUvohUBHaloopmQUUUUAFFFFAH//2Q==';
+const KEY='releve_renaissance_v1';
+const CTRL_LONG={1:'Premier',2:'Deuxième',3:'Troisième',4:'Quatrième'};
+const EXTRAS=[{id:'_ret',nom:'Retards'},{id:'_abs',nom:'Absences'},{id:'_dev',nom:'Devoirs non rédigés'}];
+const supOrd=t=>esc(t).replace(/(\d+)\s?(ème|eme|ère|ere|er|re|e)(?![a-zà-ÿ])/gi,'$1<sup>$2</sup>');
+const TABS=[['ecole','École'],['classes','Classes & matières'],['eleves','Élèves'],['notes','Saisie des notes'],['imprimer','Imprimer'],['sauvegarde','Sauvegarde']];
+function defState(){return{school:{nom:'COLLEGE MIXTE LA RENAISSANCE',adresse:'#4, Impasse lumière, rue grande plaine, croix- des- bouquets',tel:'+(509) 3150-3187',devise:'',annee:'2026-2027',directeur:'',logo:LOGO0,nbCtrl:4,libelle:'Contrôle',echelle:10,seuil:5},classes:[],notes:{}}}
+function load(){try{const r=localStorage.getItem(KEY);if(r){const d=JSON.parse(r);const s=defState();const o={...s,...d,school:{...s.school,...(d.school||{})}};Object.assign(o.school,{nbCtrl:4,echelle:10,seuil:5});return o}}catch(e){}return defState()}
+let S=load(), tab='ecole', ui={cls:'',ctrl:1,mat:'',pcls:'',pper:'1',pel:'all'};
+try{const u=JSON.parse(localStorage.getItem(KEY+'_ui')||'{}');Object.assign(ui,u);if(u.tab)tab=u.tab}catch(e){}
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(()=>{});
+let saveT;
+function save(quiet){try{localStorage.setItem(KEY,JSON.stringify(S));if(!quiet)toast('Enregistré ✓')}catch(e){toast('⚠️ Impossible d’enregistrer (stockage plein ?)')}}
+function saveUI(){try{localStorage.setItem(KEY+'_ui',JSON.stringify({...ui,tab}))}catch(e){}}
+const uid=()=>Math.random().toString(36).slice(2,10);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fx=(n,d=2)=>(n==null||isNaN(n))?'—':(+n).toFixed(d).replace('.',',');
+const num=v=>{if(v===''||v==null)return null;const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?null:n};
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove('show'),1600)}
+const getC=id=>S.classes.find(c=>c.id===id);
+const nbC=()=>4;
+const ordinal=(k,f)=>k===1?(f?'1re':'1er'):k+'e';
+const ctrlName=k=>ordinal(k)+' '+(S.school.libelle||'Contrôle');
+const fullName=e=>(e.nom||'').toUpperCase()+' '+(e.prenom||'');
+
+/* ================== CALCULS ================== */
+function noteOf(c,k,e,m){const v=S.notes?.[c.id]?.[k]?.[e]?.[m];return num(v)}
+function totalMax(c){return c.matieres.reduce((a,m)=>a+(+m.sur||0),0)}
+function rank(arr,key){const s=arr.filter(r=>r.ok).sort((a,b)=>b[key]-a[key]);s.forEach((r,i)=>{r.rang=(i>0&&Math.abs(s[i-1][key]-r[key])<1e-9)?s[i-1].rang:i+1});arr.forEach(r=>{if(!r.ok)r.rang=null})}
+function resCtrl(c,k){
+  const max=totalMax(c),E=+S.school.echelle||10;
+  const res=c.eleves.map(e=>{let t=0,miss=0,any=0;c.matieres.forEach(m=>{const v=noteOf(c,k,e.id,m.id);if(v==null)miss++;else{t+=v;any++}});
+    return{e,total:t,max,moy:max?t/max*E:0,miss,ok:any>0}});
+  rank(res,'moy');
+  const ok=res.filter(r=>r.ok);res.moyClasse=ok.length?ok.reduce((a,r)=>a+r.moy,0)/ok.length:null;
+  res.max=max;return res}
+function ctrlActifs(c){const a=[];for(let k=1;k<=nbC();k++){const d=S.notes?.[c.id]?.[k];if(d&&Object.values(d).some(o=>Object.values(o).some(v=>num(v)!=null)))a.push(k)}return a}
+function resAnnuel(c){
+  const act=ctrlActifs(c),per={};act.forEach(k=>per[k]=resCtrl(c,k));
+  const res=c.eleves.map((e,i)=>{const m={};act.forEach(k=>m[k]=per[k][i].ok?per[k][i].moy:null);
+    const vals=act.map(k=>m[k]??0);const moy=vals.length?vals.reduce((a,b)=>a+b,0)/vals.length:0;
+    const miss=act.filter(k=>m[k]==null).length;
+    return{e,parCtrl:m,moy,miss,ok:act.some(k=>m[k]!=null)}});
+  rank(res,'moy');const ok=res.filter(r=>r.ok);
+  res.moyClasse=ok.length?ok.reduce((a,r)=>a+r.moy,0)/ok.length:null;res.act=act;res.per=per;return res}
+function apprec(moy){if(r2(moy)<5)return'Insuffisant';const E=+S.school.echelle||10,r=moy/E,s=(+S.school.seuil||E/2)/E;
+  if(r>=.9)return'Excellent';if(r>=.8)return'Très bien';if(r>=.7)return'Bien';if(r>=.6&&r>=s)return'Assez bien';if(r>=s)return'Passable';return'Insuffisant'}
+const r2=x=>Math.round(x*100)/100;
+function decision(moy,e,c){const f=e.sexe==='F';return r2(moy)>=5?`${f?'Admise':'Admis'} en ${c.sup||'classe supérieure'}`:`${f?'Redouble':'Redouble'} la ${c.nom}`}
+
+/* ================== RENDU ================== */
+function render(){
+  document.getElementById('nav').innerHTML=TABS.map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="go('${k}')">${l}</button>`).join('');
+  document.getElementById('hdSchool').textContent=S.school.nom||'';
+  document.getElementById('main').innerHTML=V[tab]();
+}
+function go(t){tab=t;saveUI();render();window.scrollTo(0,0)}
+const opt=(v,l,sel)=>`<option value="${esc(v)}" ${String(v)===String(sel)?'selected':''}>${esc(l)}</option>`;
+const classSelect=(key,onch)=>`<select onchange="ui.${key}=this.value;saveUI();${onch||'render()'}">${S.classes.length?'':'<option>— aucune classe —</option>'}${S.classes.map(c=>opt(c.id,c.nom,ui[key])).join('')}</select>`;
+function ensureSel(key){if(!getC(ui[key])&&S.classes[0])ui[key]=S.classes[0].id}
+
+const V={
+ecole(){const s=S.school;return`
+<div class="card"><h2>Informations de l’école</h2>
+<p class="muted">Ces informations apparaissent en haut des bulletins et des palmarès.</p>
+<label>Nom de l’école</label><input value="${esc(s.nom)}" oninput="S.school.nom=this.value;save(1)">
+<div class="row"><div><label>Adresse</label><input value="${esc(s.adresse)}" oninput="S.school.adresse=this.value;save(1)"></div>
+<div><label>Téléphone</label><input value="${esc(s.tel)}" oninput="S.school.tel=this.value;save(1)"></div></div>
+<div class="row"><div><label>Devise / slogan</label><input value="${esc(s.devise)}" oninput="S.school.devise=this.value;save(1)"></div>
+<div><label>Année scolaire</label><input value="${esc(s.annee)}" oninput="S.school.annee=this.value;save(1)"></div></div>
+<label>Nom du directeur / de la directrice</label><input value="${esc(s.directeur)}" oninput="S.school.directeur=this.value;save(1)">
+<label>Logo</label>${s.logo?`<img src="${s.logo}" style="height:70px;display:block;margin:6px 0">`:''}
+<input type="file" accept="image/*" onchange="setLogo(this)"> ${s.logo?'<button class="btn sm sec" onclick="S.school.logo=\'\';save();render()">Retirer le logo</button>':''}
+</div>
+<div class="card"><h2>Règles de l’école</h2>
+<p>• 4 contrôles par année<br>• Moyenne = total obtenu ÷ total des points × 10 (ex. 500 sur 1000 = 5,00)<br>• Moyenne générale = moyenne des 4 contrôles<br>• Admis en classe supérieure à partir de <b>5,00</b> de moyenne générale</p></div>`},
+
+classes(){ensureSel('cls');const c=getC(ui.cls);return`
+<div class="card"><h2>Classes</h2>
+<div class="row"><input id="newCls" placeholder="Ex. 7e Année Fondamentale, NS1…"><button class="btn" style="flex:0 0 auto" onclick="addClass()">+ Ajouter</button></div>
+<div style="margin-top:8px">${S.classes.map(k=>`<span class="pill">${esc(k.nom)} · ${k.eleves.length} élèves</span>`).join('')||'<span class="muted">Aucune classe pour l’instant.</span>'}</div></div>
+${c?`<div class="card"><h2>Classe et matières</h2>
+<label>Classe</label>${classSelect('cls')}
+<label>Classe supérieure (écrite sur le bulletin : « Admis en … »)</label><input value="${esc(c.sup||'')}" placeholder="Ex. 8e Année Fondamentale" onchange="getC('${c.id}').sup=this.value;save()">
+<p class="muted" style="margin-top:12px">Inscris les matières de cette classe et la note maximale de chacune (ex. Français sur 100).</p>
+<div class="scroll"><table class="g"><tr><th>Matière</th><th style="width:90px">Note max.</th><th style="width:110px"></th></tr>
+${c.matieres.map((m,i)=>`<tr><td><input value="${esc(m.nom)}" onchange="getC('${c.id}').matieres[${i}].nom=this.value;save()"></td>
+<td><input inputmode="decimal" value="${esc(m.sur)}" onchange="getC('${c.id}').matieres[${i}].sur=num(this.value)||0;save();render()"></td>
+<td><button class="btn sm sec" onclick="mvMat(${i},-1)">↑</button><button class="btn sm sec" onclick="mvMat(${i},1)">↓</button><button class="btn sm red" onclick="delMat(${i})">✕</button></td></tr>`).join('')}
+<tr><td><input id="newMat" placeholder="Nouvelle matière"></td><td><input id="newSur" inputmode="decimal" placeholder="100"></td><td><button class="btn sm" onclick="addMat()">+ Ajouter</button></td></tr>
+<tr><th>Total des points</th><th>${fx(totalMax(c),0)}</th><th></th></tr></table></div>
+${S.classes.length>1?`<label>Copier les matières d’une autre classe</label><div class="row"><select id="cpFrom">${S.classes.filter(k=>k.id!==c.id).map(k=>opt(k.id,k.nom)).join('')}</select><button class="btn sec" style="flex:0 0 auto" onclick="copyMat()">Copier</button></div>`:''}
+<div style="margin-top:12px"><button class="btn sec" onclick="renClass()">Renommer la classe</button><button class="btn red" onclick="delClass()">Supprimer la classe</button></div>
+<div id="dlg"></div></div>`:''}`},
+
+eleves(){ensureSel('cls');const c=getC(ui.cls);if(!c)return`<div class="card">Crée d’abord une classe dans l’onglet « Classes & matières ».</div>`;return`
+<div class="card"><h2>Inscrire un élève</h2><label>Classe</label>${classSelect('cls')}
+<div class="row"><div><label>Nom</label><input id="eNom" placeholder="PIERRE"></div><div><label>Prénom(s)</label><input id="ePre" placeholder="Jean Robert" onkeydown="if(event.key==='Enter')addEl()"></div>
+<div style="flex:0 0 90px"><label>Sexe</label><select id="eSx"><option>M</option><option>F</option></select></div></div>
+<button class="btn" onclick="addEl()">+ Inscrire</button></div>
+<div class="card"><h2>Liste de la classe — ${c.eleves.length} élève(s)</h2><p class="muted">La liste se range toute seule par ordre alphabétique.</p>
+<div class="scroll"><table class="g"><tr><th>N°</th><th>Nom</th><th>Prénom(s)</th><th style="width:80px">Sexe</th><th style="width:60px"></th></tr>
+${c.eleves.map((e,i)=>`<tr><td>${i+1}</td><td><input value="${esc(e.nom)}" onchange="getC('${c.id}').eleves[${i}].nom=this.value;sortEl()"></td>
+<td><input value="${esc(e.prenom)}" onchange="getC('${c.id}').eleves[${i}].prenom=this.value;sortEl()"></td>
+<td><select onchange="getC('${c.id}').eleves[${i}].sexe=this.value;save()">${opt('M','M',e.sexe)}${opt('F','F',e.sexe)}</select></td>
+<td><button class="btn sm red" onclick="delEl(${i})">✕</button></td></tr>`).join('')}</table></div>
+<div id="dlg"></div></div>
+<div class="card"><h2>Inscrire plusieurs élèves d’un coup</h2>
+<p class="muted">Un élève par ligne : <b>NOM Prénom</b>. Ajoute « , F » pour une fille. Ex. : <i>JOSEPH Marie Carline, F</i></p>
+<textarea id="bulk" placeholder="PIERRE Jean Robert&#10;JOSEPH Marie Carline, F"></textarea>
+<button class="btn" onclick="bulkAdd()">+ Inscrire ces élèves</button></div>`},
+
+notes(){ensureSel('cls');const c=getC(ui.cls);if(!c)return`<div class="card">Crée d’abord une classe.</div>`;
+if(!c.matieres.length||!c.eleves.length)return`<div class="card"><label>Classe</label>${classSelect('cls')}<p>Ajoute d’abord des matières et des élèves à cette classe.</p></div>`;
+const k=Math.min(Math.max(1,+ui.ctrl||1),4);const isX=EXTRAS.some(o=>o.id===ui.mat);let mi=c.matieres.findIndex(m=>m.id===ui.mat);if(mi<0&&!isX)mi=0;const m=isX?{...EXTRAS.find(o=>o.id===ui.mat),sur:999}:c.matieres[mi];ui.mat=m.id;
+const done=c.eleves.filter(e=>noteOf(c,k,e.id,m.id)!=null).length;return`
+<div class="card"><h2>Saisie des notes par matière</h2><div class="row"><div><label>Classe</label>${classSelect('cls')}</div>
+<div><label>Contrôle</label><select onchange="ui.ctrl=+this.value;saveUI();render()">${[1,2,3,4].map(i=>opt(i,ctrlName(i),k)).join('')}</select></div>
+<div><label>Matière</label><select onchange="ui.mat=this.value;saveUI();render()">${c.matieres.map(x=>opt(x.id,x.nom+' (sur '+fx(x.sur,0)+')',m.id)).join('')}<optgroup label="Autres">${EXTRAS.map(o=>opt(o.id,o.nom,m.id)).join('')}</optgroup></select></div></div>
+<div style="margin-top:8px"><button class="btn sm sec" ${mi>0?'':'disabled'} onclick="ui.mat='${c.matieres[mi-1]?.id}';saveUI();render()">← Matière précédente</button>
+<button class="btn sm sec" ${mi>=0&&mi<c.matieres.length-1?'':'disabled'} onclick="ui.mat='${c.matieres[mi+1]?.id}';saveUI();render()">Matière suivante →</button></div></div>
+<div class="card"><h2>${esc(m.nom)} — ${esc(ctrlName(k))} <span class="muted">${isX?'(nombre)':'(note sur '+fx(m.sur,0)+')'}</span></h2>
+<p class="muted"><b id="prog">${done} / ${c.eleves.length}</b> notes saisies. Tape la note puis Entrée pour passer à l’élève suivant. ${isX?'Laisse vide si 0.':'Rouge = note plus grande que '+fx(m.sur,0)+'.'}</p>
+<table class="g notes1"><tr><th style="width:44px">N°</th><th>Nom et prénom</th><th style="width:110px" class="n">${isX?esc(m.nom):'Note /'+fx(m.sur,0)}</th></tr>
+${c.eleves.map((e,i)=>{const v=S.notes?.[c.id]?.[k]?.[e.id]?.[m.id]??'';const bad=num(v)!=null&&(num(v)>m.sur||num(v)<0);
+return`<tr><td>${i+1}</td><td>${esc(fullName(e))}</td><td><input inputmode="decimal" class="${bad?'bad':''}" value="${esc(v)}" data-r="${i}" data-c="0" oninput="setNote('${c.id}',${k},'${e.id}','${m.id}',this,${+m.sur||0})" onkeydown="navKey(event,this)"></td></tr>`}).join('')}
+</table>${mi>=0&&mi<c.matieres.length-1?`<button class="btn" style="margin-top:10px" onclick="ui.mat='${c.matieres[mi+1].id}';saveUI();render();window.scrollTo(0,0)">Terminé → ${esc(c.matieres[mi+1].nom)}</button>`:''}</div>`},
+
+imprimer(){ensureSel('pcls');const c=getC(ui.pcls);if(!c)return`<div class="card">Crée d’abord une classe.</div>`;
+if(ui.pel!=='all'&&!c.eleves.some(e=>e.id===ui.pel))ui.pel='all';if(!(+ui.pper>=1&&+ui.pper<=4))ui.pper='1';const per=ui.pper;return`
+<div class="card"><h2>Imprimer</h2><label>Classe</label>${classSelect('pcls')}</div>
+<div class="card"><h2>📝 Palmarès vierge pour les professeurs</h2>
+<p class="muted">Liste de la classe avec les cases des 4 contrôles vides, à remettre au professeur.</p>
+<label>Matière</label><select id="pvMat">${opt('all','Toutes les matières (une page chacune)')}${c.matieres.map(m=>opt(m.id,m.nom)).join('')}</select>
+<button class="btn" onclick="pVierge(document.getElementById('pvMat').value)">🖨️ Palmarès vierge</button></div>
+<div class="card"><h2>📄 Bulletins et résultats</h2><div class="row">
+<div><label>Contrôle</label><select onchange="ui.pper=this.value;saveUI();render()">${[1,2,3,4].map(i=>opt(i,ctrlName(i),per)).join('')}</select></div>
+<div><label>Bulletin de</label><select onchange="ui.pel=this.value;saveUI()">${opt('all','Toute la classe',ui.pel)}${c.eleves.map(e=>opt(e.id,fullName(e),ui.pel)).join('')}</select></div></div>
+<div style="margin-top:10px">
+<button class="btn" onclick="pBulletins()">📄 Bulletins</button>
+<button class="btn" onclick="pPalmares(false)">🏆 Classement du contrôle</button>
+<button class="btn" onclick="pReleve(false)">📋 Relevé de notes du contrôle</button></div>
+<div style="margin-top:6px"><button class="btn sec" onclick="pPalmares(true)">🏆 Classement de fin d’année</button>
+<button class="btn sec" onclick="pReleve(true)">📋 Moyennes de l’année</button></div>
+<p class="muted">Le bulletin du 4e contrôle affiche la moyenne générale et la décision (admis / redouble). Un aperçu s’ouvre : appuie sur « Imprimer / PDF » puis choisis « Enregistrer en PDF » ou ton imprimante.</p></div>`},
+
+sauvegarde(){const n=S.classes.reduce((a,c)=>a+c.eleves.length,0);return`
+<div class="card"><h2>Sauvegarde</h2>
+<p>Les données restent sur cet appareil (${S.classes.length} classes, ${n} élèves). Fais une sauvegarde régulièrement : si le navigateur est effacé, tout est perdu.</p>
+<button class="btn" onclick="exportJSON()">💾 Télécharger une sauvegarde</button>
+<label>Restaurer une sauvegarde (.json)</label><input type="file" accept=".json,application/json" onchange="importJSON(this)">
+<p class="muted">Pour passer d’un PC à un téléphone : télécharge la sauvegarde ici, envoie le fichier (WhatsApp, clé USB…), puis restaure-le sur l’autre appareil.</p></div>
+<div class="card"><h2>Nouvelle année</h2><p class="muted">Efface toutes les notes mais garde l’école, les classes, les matières et les élèves.</p>
+<button class="btn red" onclick="ask('Effacer toutes les notes de l’année ?',()=>{S.notes={};save();render()})">Effacer les notes</button>
+<div id="dlg"></div></div>`}
+};
+
+/* ================== ACTIONS ================== */
+function ask(msg,fn){const d=document.getElementById('dlg');if(!d){fn();return}window._askFn=fn;
+  d.innerHTML=`<div style="margin-top:10px;padding:10px;border:1px solid var(--rd);border-radius:8px;background:#fdecea">${esc(msg)}<br>
+  <button class="btn red" onclick="window._askFn();">Oui</button><button class="btn sec" onclick="this.parentNode.remove()">Annuler</button></div>`;d.scrollIntoView({block:'center'})}
+function setLogo(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const s=Math.min(1,240/Math.max(im.width,im.height));
+  const cv=document.createElement('canvas');cv.width=im.width*s;cv.height=im.height*s;cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);
+  S.school.logo=cv.toDataURL('image/png');save();render()};im.src=rd.result};rd.readAsDataURL(f)}
+function addClass(){const v=document.getElementById('newCls').value.trim();if(!v)return;const c={id:uid(),nom:v,matieres:[],eleves:[]};S.classes.push(c);ui.cls=c.id;save();render()}
+function renClass(){const c=getC(ui.cls);const d=document.getElementById('dlg');d.innerHTML=`<div class="row" style="margin-top:10px"><input id="rn" value="${esc(c.nom)}"><button class="btn" style="flex:0 0 auto" onclick="getC('${c.id}').nom=document.getElementById('rn').value;save();render()">OK</button></div>`}
+function delClass(){const c=getC(ui.cls);ask(`Supprimer la classe « ${c.nom} », ses élèves et ses notes ?`,()=>{S.classes=S.classes.filter(k=>k!==c);delete S.notes[c.id];ui.cls='';save();render()})}
+function addMat(){const c=getC(ui.cls),n=document.getElementById('newMat').value.trim();if(!n)return;c.matieres.push({id:uid(),nom:n,sur:num(document.getElementById('newSur').value)||100});save();render();document.getElementById('newMat').focus()}
+function delMat(i){const c=getC(ui.cls);ask(`Supprimer la matière « ${c.matieres[i].nom} » ?`,()=>{c.matieres.splice(i,1);save();render()})}
+function mvMat(i,d){const a=getC(ui.cls).matieres,j=i+d;if(j<0||j>=a.length)return;[a[i],a[j]]=[a[j],a[i]];save(1);render()}
+function copyMat(){const c=getC(ui.cls),f=getC(document.getElementById('cpFrom').value);f.matieres.forEach(m=>{if(!c.matieres.some(x=>x.nom.toLowerCase()===m.nom.toLowerCase()))c.matieres.push({id:uid(),nom:m.nom,sur:m.sur})});save();render()}
+function delEl(i){const c=getC(ui.cls);ask(`Retirer ${fullName(c.eleves[i])} de la classe ?`,()=>{c.eleves.splice(i,1);save();render()})}
+function sortC(c){c.eleves.sort((a,b)=>((a.nom||'')+' '+(a.prenom||'')).localeCompare((b.nom||'')+' '+(b.prenom||''),'fr',{sensitivity:'base'}))}
+function sortEl(){sortC(getC(ui.cls));save();render()}
+function addEl(){const c=getC(ui.cls),n=document.getElementById('eNom').value.trim(),p=document.getElementById('ePre').value.trim();if(!n&&!p)return;
+  const sx=document.getElementById('eSx').value;c.eleves.push({id:uid(),nom:n.toUpperCase(),prenom:p,sexe:sx});sortC(c);save(1);toast('Élève inscrit ✓');render();
+  document.getElementById('eSx').value=sx;document.getElementById('eNom').focus()}
+function bulkAdd(){const c=getC(ui.cls);let n=0;document.getElementById('bulk').value.split('\n').forEach(l=>{l=l.trim();if(!l)return;
+  let sexe='M';const m=l.match(/[,;]\s*([FfMm])\s*$/);if(m){sexe=m[1].toUpperCase();l=l.slice(0,m.index).trim()}
+  const p=l.split(/\s+/);c.eleves.push({id:uid(),nom:p[0].toUpperCase(),prenom:p.slice(1).join(' '),sexe});n++});sortC(c);save(1);toast(n+' élève(s) ajouté(s)');render()}
+function setNote(cid,k,eid,mid,inp,max){S.notes[cid]??={};S.notes[cid][k]??={};S.notes[cid][k][eid]??={};
+  const v=inp.value.trim();S.notes[cid][k][eid][mid]=v;const n=num(v);inp.classList.toggle('bad',n!=null&&(n>max||n<0));
+  clearTimeout(saveT);saveT=setTimeout(()=>save(1),300);
+  const c=getC(cid),pr=document.getElementById('prog');if(pr)pr.textContent=c.eleves.filter(e=>noteOf(c,k,e.id,mid)!=null).length+' / '+c.eleves.length}
+function navKey(ev,inp){if(ev.key!=='Enter'&&ev.key!=='ArrowDown'&&ev.key!=='ArrowUp')return;ev.preventDefault();
+  const r=+inp.dataset.r+(ev.key==='ArrowUp'?-1:1),c=inp.dataset.c;const nx=document.querySelector(`.grid input[data-r="${r}"][data-c="${c}"]`)||document.querySelector(`.grid input[data-r="0"][data-c="${+c+1}"]`);if(nx){nx.focus();nx.select()}else inp.blur()}
+function exportJSON(){const b=new Blob([JSON.stringify(S,null,1)],{type:'application/json'});const a=document.createElement('a');
+  a.href=URL.createObjectURL(b);a.download=`releve_${(S.school.nom||'ecole').replace(/[^\w]+/g,'_')}_${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();toast('Sauvegarde téléchargée')}
+function importJSON(inp){const f=inp.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const d=JSON.parse(rd.result);if(!d.classes)throw 0;
+  ask('Remplacer toutes les données de cet appareil par cette sauvegarde ?',()=>{const s=defState();S={...s,...d,school:{...s.school,...d.school}};save();render();toast('Sauvegarde restaurée ✓')})}catch(e){toast('⚠️ Fichier invalide')}};rd.readAsText(f)}
+
+/* ================== IMPRESSION ================== */
+function hdr(){const s=S.school,L=s.logo?`<img src="${s.logo}">`:'<div style="width:95px"></div>';return`<div class="hd2">${L}<div class="t"><div class="nom">${esc(s.nom||'Nom de l’école')}</div>
+<div class="ad">${esc(s.adresse)}</div>${s.tel?`<div class="ad">TEL: ${esc(s.tel)}</div>`:''}${s.devise?`<div class="ad" style="font-weight:normal"><i>${esc(s.devise)}</i></div>`:''}</div>${L}</div>`}
+function head(titre,c,extra){const s=S.school;return hdr()+`<div class="titre">${titre}</div><div class="info"><div><b>Classe :</b> ${esc(c.nom)}</div><div><b>Année scolaire :</b> ${esc(s.annee)}</div>${extra||''}</div>`}
+function showPrint(html){document.getElementById('printArea').innerHTML=html;document.getElementById('preview').style.display='block';document.getElementById('preview').scrollTop=0}
+function closePreview(){document.getElementById('preview').style.display='none'}
+const rangTxt=(r,n,e)=>r?`${ordinal(r,e&&e.sexe==='F')} sur ${n}`:'—';
+function guard(c){if(!c.matieres.length||!c.eleves.length){toast('Cette classe n’a pas encore de matières ou d’élèves');return false}return true}
+
+const nt=v=>v==null?'':fx(v,v%1?2:0);
+const sig=()=>`<div class="sig"><div>Direction${S.school.directeur?'<br>'+esc(S.school.directeur):''}</div><div>Signature du parent</div></div>`;
+
+function pVierge(mid){const c=getC(ui.pcls);if(!c.eleves.length){toast('Aucun élève inscrit dans cette classe');return}
+  const mats=mid==='all'?c.matieres:c.matieres.filter(m=>m.id===mid);if(!mats.length){toast('Aucune matière dans cette classe');return}
+  showPrint(mats.map(m=>`<div class="page"><div class="doc">${hdr()}
+  <div style="text-align:center;font-size:26pt;font-weight:bold;letter-spacing:3px;margin:10px 0 8px">PALMARÈS</div>
+  <div style="display:flex;justify-content:space-between;font-size:13pt;margin-bottom:8px"><div><b>Classe :</b> ${esc(c.nom)}</div><div><b>Matière :</b> ${esc(m.nom)}</div></div>
+  <table class="vierge"><thead><tr><th class="n" style="width:40px">N°</th><th>Nom et prénom</th>${[1,2,3,4].map(k=>`<th class="n" style="width:15%">${esc(ctrlName(k))}</th>`).join('')}</tr></thead>
+  <tbody>${c.eleves.map((e,i)=>`<tr><td class="n">${i+1}</td><td>${esc(fullName(e))}</td><td></td><td></td><td></td><td></td></tr>`).join('')}</tbody></table></div></div>`).join(''))}
+
+function pBulletins(){const c=getC(ui.pcls);if(!guard(c))return;const k=+ui.pper;
+  const r=resCtrl(c,k);if(!r.some(x=>x.ok)){toast('Aucune note saisie pour le '+ctrlName(k));return}
+  const ann=k===4?resAnnuel(c):null;
+  const list=ui.pel==='all'?c.eleves:c.eleves.filter(e=>e.id===ui.pel);
+  const pad=(v,w)=>{if(v==null||v==='')return'';const n=+v;if(n%1)return fx(n,2);return String(n).padStart(w,'0')};
+  const wOf=m=>String(Math.round(+m.sur||0)).length;
+  const moyTxt=m=>{const t=r2(m).toFixed(2).split('.');return`${t[0]}.<sup>${t[1]}</sup>`};
+  const placeTxt=(rg,e)=>rg?(rg===1?`1<sup>${e.sexe==='F'?'re':'er'}</sup>`:`${rg}<sup>e</sup>`):'—';
+  showPrint(list.map(e=>{const i=c.eleves.indexOf(e),x=r[i],f=e.sexe==='F',ex=id=>S.notes?.[c.id]?.[k]?.[e.id]?.[id];
+    return`<div class="page"><div class="doc bul">${hdr()}
+    <div class="bi"><div>Nom de l’élève: ${esc(e.nom)} ${esc(e.prenom)}</div><div>Niveau de l’élève: ${supOrd(c.nom)}</div>
+    <div>Année Académique: ${esc(S.school.annee)}</div><div>${CTRL_LONG[k]} Contrôle</div></div>
+    <table class="bt"><tr><th>Matières</th><th>Notes</th><th>Coefficients</th></tr>
+    ${c.matieres.map(m=>`<tr><td>${esc(m.nom)}</td><td class="n">${pad(noteOf(c,k,e.id,m.id),wOf(m))}</td><td class="n">${fx(m.sur,0)}</td></tr>`).join('')}
+    ${EXTRAS.map(o=>`<tr><td>${o.nom}</td><td class="n">${pad(num(ex(o.id))??0,2)}</td><td></td></tr>`).join('')}</table>
+    <div class="bl"><div>Total: ${x.ok?fx(x.total,x.total%1?2:0).replace(',','.'):'—'}/${fx(r.max,0)}</div><div>Place : ${placeTxt(x.rang,e)}</div></div>
+    <div class="bm">Moyenne de l’élève: ${x.ok?moyTxt(x.moy):'—'}</div>
+    <div class="bo"><div>${ann?(r2(ann[i].moy)>=5?`Observation : L’élève est ${f?'admise':'admis'} en ${supOrd(c.sup||'classe supérieure')}`:`Observation : L’élève redouble la ${supOrd(c.nom)}`):''}</div><div class="sg">Parents</div></div>
+    <div class="bd"><div class="sg">Directeur</div></div></div></div>`}).join(''))}
+
+function pPalmares(ann){const c=getC(ui.pcls);if(!guard(c))return;const E=10,k=+ui.pper;
+  const r=ann?resAnnuel(c):resCtrl(c,k);if(ann?!r.act.length:!r.some(x=>x.ok)){toast('Aucune note saisie');return}
+  const rows=[...r].sort((a,b)=>(a.rang??1e9)-(b.rang??1e9));
+  const adm=r.filter(x=>x.ok&&r2(x.moy)>=5).length,n=r.filter(x=>x.ok).length;
+  showPrint(`<div class="page"><div class="doc">${head('CLASSEMENT — '+(ann?'FIN D’ANNÉE':esc(ctrlName(k)).toUpperCase()),c)}
+  <table><tr><th class="n">Rang</th><th>Nom et prénom</th>${ann?'':`<th class="n">Total /${fx(r.max,0)}</th>`}<th class="n">Moyenne /${E}</th><th>${ann?'Observation':'Appréciation'}</th></tr>
+  ${rows.map(x=>`<tr><td class="n">${x.rang?ordinal(x.rang,x.e.sexe==='F'):'—'}</td><td>${esc(fullName(x.e))}</td>${ann?'':`<td class="n">${x.ok?nt(x.total):'—'}</td>`}<td class="n">${x.ok?fx(x.moy):'—'}</td><td>${!x.ok?'Pas de notes':ann?decision(x.moy,x.e,c):apprec(x.moy)}</td></tr>`).join('')}</table>
+  <div class="res"><div><b>Effectif :</b> ${c.eleves.length}</div><div><b>Moyenne de la classe :</b> ${fx(r.moyClasse)}</div><div><b>${ann?'Admis':'Ont la moyenne'} :</b> ${adm} sur ${n}${n?` (${Math.round(adm/n*100)} %)`:''}</div></div>
+  <div class="sig"><div>Direction${S.school.directeur?'<br>'+esc(S.school.directeur):''}</div><div>Titulaire de la classe</div></div></div></div>`)}
+
+function pReleve(ann){const c=getC(ui.pcls);if(!guard(c))return;const E=10;
+  if(ann){const r=resAnnuel(c);if(!r.act.length){toast('Aucune note saisie');return}
+    showPrint(`<div class="page"><div class="doc">${head('MOYENNES DE L’ANNÉE',c)}<table><tr><th class="n">N°</th><th>Nom et prénom</th>${[1,2,3,4].map(k=>`<th class="n">${esc(ctrlName(k))}</th>`).join('')}<th class="n">Moy. générale</th><th class="n">Rang</th><th>Observation</th></tr>
+    ${r.map((x,i)=>`<tr><td class="n">${i+1}</td><td>${esc(fullName(x.e))}</td>${[1,2,3,4].map(k=>`<td class="n">${x.parCtrl[k]==null?'':fx(x.parCtrl[k])}</td>`).join('')}<td class="n"><b>${x.ok?fx(x.moy):'—'}</b></td><td class="n">${x.rang??'—'}</td><td>${x.ok?decision(x.moy,x.e,c):'—'}</td></tr>`).join('')}</table></div></div>`);return}
+  const k=+ui.pper,r=resCtrl(c,k);
+  showPrint(`<div class="page land"><div class="doc">${head('RELEVÉ DE NOTES — '+esc(ctrlName(k)).toUpperCase(),c)}<table class="small"><tr><th class="n">N°</th><th>Nom et prénom</th>${c.matieres.map(m=>`<th class="n">${esc(m.nom)}<br>/${fx(m.sur,0)}</th>`).join('')}<th class="n">Total<br>/${fx(r.max,0)}</th><th class="n">Moy.<br>/${E}</th><th class="n">Rang</th></tr>
+  ${r.map((x,i)=>`<tr><td class="n">${i+1}</td><td>${esc(fullName(x.e))}</td>${c.matieres.map(m=>`<td class="n">${nt(noteOf(c,k,x.e.id,m.id))}</td>`).join('')}<td class="n"><b>${x.ok?nt(x.total):''}</b></td><td class="n"><b>${x.ok?fx(x.moy):''}</b></td><td class="n">${x.rang??''}</td></tr>`).join('')}
+  </table><div class="res"><div><b>Moyenne de la classe :</b> ${fx(r.moyClasse)} / ${E}</div></div></div></div>`)}
+
+render();
+if('serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
